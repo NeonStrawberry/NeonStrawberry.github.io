@@ -1,0 +1,255 @@
+<!-- Some of the shittiest code I've ever written, but damn it, it fucking works -->
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>bulletbox v1</title>
+		<style>
+			.center {
+				margin: auto;
+				width: 400px;
+			}
+
+			body {
+				font-family: monospace;
+				background-image: url("bg.png");
+			}
+
+			a {
+				color: #3355ff;
+			}
+
+			#display {
+				border: 5px solid white;
+				background-color: black;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="center" id="main">
+			<h1>BulletBox</h1>
+			<p>By NeonStrawberry</p>
+			<canvas id="display" width="400" height="400"></canvas>
+			<audio id="song" loop="true"><source id="lol" src="keygen.mp3" /></audio>
+
+			<button id="begin" onclick="start()">BEGIN</button>
+			<label>Score: </label>
+			<p id="sc"></p>
+			<hr />
+			<p id="songname">Music: Dubmood - Keygen 8</p>
+			<p>Just for fun, I originally set out with the intention to create a clone of Undertale's battle system (hence the familiar colour scheme), but I ended up making this instead. Enjoy!</p>
+			<p>If you like this, you should <a href="https://neonstrawberry.github.io">check out my other stuff!</a></p>
+		</div>
+
+		<script>
+			let scoredelta = 50;
+			let scorem = 1;
+
+			function secret() {
+				document.getElementById("song").src = "que.mp3";
+				document.getElementById("song").play();
+
+				document.getElementById("songname").innerHTML = "Music: ???";
+				scorem = 20;
+				document.body.style.backgroundImage = "url('brot2.png')";
+				document.body.style.color = "white";
+				document.getElementById("main").style.backgroundColor = "#111111";
+			}
+
+			window.onkeydown = function(k) {
+				switch(k.keyCode) {
+					case 87: {
+						vel[1] = -1;
+						break;
+					} case 65: {
+						vel[0] = -1;
+						break;
+					} case 83: {
+						vel[1] = 1;
+						break;
+					} case 68: {
+						vel[0] = 1;
+						break;
+					} case 80: {
+						let adfgdfg = Math.floor(Math.random() * 30);
+						if (adfgdfg == 3)
+							secret();
+						break;
+					}
+				}
+			}
+
+			window.onkeyup = function(k) {
+				switch(k.keyCode) {
+					case 87: {
+						vel[1] = 0;
+						break;
+					} case 65: {
+						vel[0] = 0;
+						break;
+					} case 83: {
+						vel[1] = 0;
+						break;
+					} case 68: {
+						vel[0] = 0;
+						break;
+					}
+				}
+			}
+
+			var bbox = document.getElementById("display");
+			var ctx = bbox.getContext("2d");
+
+			var ppos = [200, 200];
+
+			var vattk_pos = [];
+			var hattk_pos = [];
+			// var vattk_tm = [];
+			// var hattk_tm = [];
+
+			var pvp = [];
+			var php = [];
+
+			var vel = [0, 0];
+
+			let tk = 0;
+			let score = 0;
+
+			let atm = 50;
+			let atm2 = 0;
+
+			let warn = 0;
+
+			let colcheck = 1;
+
+			dsc = -1;
+
+			function reset() {
+				ppos = [200, 200];
+
+				vattk_pos = [];
+				hattk_pos = [];
+				vel = [0, 0];
+
+				score = 0;
+				tk = 0;
+				atm = 50;
+				atm2 = 0;
+				dsc = -1;
+				warn = 0;
+			}
+
+			function vattk() {
+				for (let i = 0; i < Math.min(8 + (score / 5 * scorem), 17); i++) {
+					vattk_pos.push(Math.random() * 400);
+					hattk_pos.push(0);
+				}
+			}
+
+			function wattk() {
+				for (let i = 0; i < (score / 5 * scorem); i++) {
+					pvp.push(Math.random() * 400);
+					php.push(0);
+				}
+			}
+
+			function tick() {
+				ppos[0] += vel[0] * 8;
+				ppos[1] += vel[1] * 8;
+				if (ppos[0] < 10)
+					ppos[0] = 10;
+				if (ppos[1] < 10)
+					ppos[1] = 10;
+				if (ppos[0] > 390)
+					ppos[0] = 390;
+				if (ppos[1] > 390)
+					ppos[1] = 390;
+				
+				ctx.fillStyle = "black";
+				ctx.fillRect(0, 0, bbox.width, bbox.height);
+				ctx.fillStyle = "red";
+				ctx.fillRect(ppos[0] - 8, ppos[1] - 8, 16, 16);
+
+				ctx.fillStyle = "white"
+
+				if (atm == 0) {
+					atm = Math.max(30, 50 - score);
+					vattk();
+				}
+
+				if ((score >= 20) && (atm2 <= 0)) {
+					warn = 1;
+					console.log("ATM2");
+					if (atm2 <= -75) {
+						warn = 0;
+						atm2 = Math.max(300, 450 - score * 2);
+						wattk();
+					}
+				}
+
+				for (let i = 0; i < vattk_pos.length; i++) {
+					hattk_pos[i] += Math.min(5 + Math.floor(score / 8 * scorem), 10 * scorem);
+					ctx.fillRect(vattk_pos[i] - 5, hattk_pos[i] - 15, 10, 30);
+
+					if (hattk_pos[i] > 500) {
+						hattk_pos.splice(i, 1);
+						vattk_pos.splice(i, 1);
+						i--;
+					}
+
+					// Quick hacky AABB collision check
+					if ((colcheck == 1) && (hattk_pos[i] - ppos[1] < 23) && (hattk_pos[i] - ppos[1] > -23))
+						if ((vattk_pos[i] - ppos[0] < 13) && (vattk_pos[i] - ppos[0] > -13)) {
+							alert("you died!\nScore: " + (score - 1) + "" + dsc);
+							reset();
+						}
+				}
+
+				ctx.fillStyle = "#ff00ff";
+				for (let i = 0; i < pvp.length; i++) {
+					php[i] += Math.min(5 + Math.floor(score / 6 * scorem), 10 * scorem);
+					ctx.fillRect(php[i] - 15, pvp[i] - 5, 30, 10);
+
+					if ((colcheck == 1) && (php[i] - ppos[0] < 23) && (php[i] - ppos[0] > -23))
+						if ((pvp[i] - ppos[1] < 13) && (pvp[i] - ppos[1] > -13)) {
+							alert("you died!\nScore: " + (score - 1) + "" + dsc);
+							reset();
+						}
+				}
+
+				if (warn == 1) {
+					ctx.font = "25px monospace";
+					ctx.fillText("WARNING", 20, 30);
+				}
+
+				if (tk % scoredelta == 0)
+					score++;
+				if (tk % (scoredelta / 10) == 0) {
+					dsc++;
+					if (dsc >= 10)
+						dsc = 0;
+				}
+
+				if (score >= 150) {
+					score = 150;
+					ctx.font = "18px monospace";
+					ctx.fillText("wow, you actually won!", 20, 20);
+				}
+
+				tk++;
+				atm--;
+				if (score >= 20)
+					atm2--;
+
+				document.getElementById("sc").innerHTML = score - 1 + "" + dsc;
+			}
+
+			function start() {
+				document.getElementById("begin").remove();
+
+				setInterval(tick, 25);
+				var song = document.getElementById("song");
+				song.play();
+			}
+		</script>
+	</body>
+</html>
