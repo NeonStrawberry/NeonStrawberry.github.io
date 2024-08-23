@@ -1,0 +1,19 @@
+body {
+    background-color: #111111;
+    font-family: "monospace";
+    font-size: 75%;
+    color: white;
+}
+
+#display {
+    border: 3px solid white;
+    background-color: black;
+}
+
+#main {
+    text-align: center;
+}
+
+a {
+    color: #aaaaff;
+}
